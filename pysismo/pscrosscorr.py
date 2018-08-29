@@ -5,13 +5,12 @@ processing, such as frequency-time analysis (FTAN) to measure
 dispersion curves.
 """
 
-import pserrors, psstation, psutils, pstomo
 import obspy.signal
-import obspy.xseed
+import obspy.io.xseed
 import obspy.signal.cross_correlation
 import obspy.signal.filter
 from obspy.core import AttribDict, read, UTCDateTime, Trace
-from obspy.signal.invsim import cosTaper
+from obspy.signal.invsim import cosine_taper
 import numpy as np
 from numpy.fft import rfft, irfft, fft, ifft, fftfreq
 from scipy import integrate
@@ -27,16 +26,17 @@ from collections import OrderedDict
 import datetime as dt
 from calendar import monthrange
 
-import matplotlib.pyplot as plt
 import matplotlib as mpl
+mpl.use('Agg')
 from matplotlib.backends.backend_pdf import PdfPages
+import matplotlib.pyplot as plt
 from matplotlib import gridspec
 
 plt.ioff()  # turning off interactive mode
-
 # ====================================================
 # parsing configuration file to import some parameters
 # ====================================================
+import pserrors, psstation, psutils, pstomo
 from psconfig import (
     CROSSCORR_DIR, FTAN_DIR, PERIOD_BANDS, CROSSCORR_TMAX, PERIOD_RESAMPLE,
     CROSSCORR_SKIPLOCS, MINFILL, FREQMIN, FREQMAX, CORNERS, ZEROPHASE,
@@ -533,7 +533,7 @@ class CrossCorrelation:
         plt.plot(freqarray, amplarray)
         plt.xlim((0.0, 0.2))
 
-        plt.show()
+        #plt.show()
 
     def plot_by_period_band(self, axlist=None, bands=PERIOD_BANDS,
                             plot_title=True, whiten=False, tmax=None,
@@ -614,7 +614,7 @@ class CrossCorrelation:
             xy = (t, ylim[0] + 0.1 * (ylim[1] - ylim[0]))
             axlist[0].annotate(s='{} km/s'.format(v), xy=xy, xytext=xy,
                                horizontalalignment=align, fontsize=8,
-                               bbox={'color': 'k', 'facecolor': 'white'})
+                               bbox=dict(boxstyle="square", fc="w", ec="0.5", alpha=0.9))
 
         # noise window
         axlist[0].fill_between(x=tnoise, y1=[ylim[1], ylim[1]],
@@ -629,7 +629,7 @@ class CrossCorrelation:
                        s="Original data, SNR = {:.1f}".format(float(SNR)),
                        fontsize=9,
                        horizontalalignment='right',
-                       bbox={'color': 'k', 'facecolor': 'white'})
+                       bbox=dict(boxstyle="square", fc="w", ec="0.5", alpha=0.9))
 
         # formatting axes
         axlist[0].set_xlim(xlim)
@@ -677,7 +677,7 @@ class CrossCorrelation:
                     s="{} - {} s, SNR = {:.1f}".format(tmin, tmax, SNR),
                     fontsize=9,
                     horizontalalignment='right',
-                    bbox={'color': 'k', 'facecolor': 'white'})
+                    bbox=dict(boxstyle="square", fc="w", ec="0.5", alpha=0.9))
 
             if lastplot:
                 # adding label to signalwindows
@@ -686,7 +686,7 @@ class CrossCorrelation:
                         s="Signal window",
                         horizontalalignment='center',
                         fontsize=8,
-                        bbox={'color': 'k', 'facecolor': 'white'})
+                        bbox=dict(boxstyle="square", fc="w", ec="0.5", alpha=0.9))
 
                 # adding label to noise windows
                 ax.text(x=sum(tnoise) / 2,
@@ -694,7 +694,7 @@ class CrossCorrelation:
                         s="Noise window",
                         horizontalalignment='center',
                         fontsize=8,
-                        bbox={'color': 'k', 'facecolor': 'white'})
+                        bbox=dict(boxstyle="square", fc="w", ec="0.5", alpha=0.9))
 
             # formatting axes
             ax.set_xlim(xlim)
@@ -714,8 +714,8 @@ class CrossCorrelation:
         if outfile:
             axlist[0].gcf().savefig(outfile, dpi=300, transparent=True)
 
-        if fig:
-            fig.show()
+        #if fig:
+        #    fig.show()
 
     def FTAN(self, whiten=False, phase_corr=None, months=None, vgarray_init=None,
              optimize_curve=None, strength_smoothing=STRENGTH_SMOOTHING,
@@ -1283,7 +1283,7 @@ class CrossCorrelation:
         x = (xlim[0] + xlim[1]) / 2.0
         y = ylim[0] + 0.05 * (ylim[1] - ylim[0])
         ax.text(x, y, "Raw FTAN", fontsize=12,
-                bbox={'color': 'k', 'facecolor': 'white', 'lw': 0.5},
+                bbox=dict(boxstyle="square", fc="w", ec="0.5", alpha=0.9),
                 horizontalalignment='center',
                 verticalalignment='center')
         ax.set_xlim(xlim)
@@ -1335,7 +1335,7 @@ class CrossCorrelation:
         x = (xlim[0] + xlim[1]) / 2.0
         y = ylim[0] + 0.05 * (ylim[1] - ylim[0])
         ax.text(x, y, "Clean FTAN", fontsize=12,
-                bbox={'color': 'k', 'facecolor': 'white', 'lw': 0.5},
+                bbox=dict(boxstyle="square", fc="w", ec="0.5", alpha=0.9),
                 horizontalalignment='center',
                 verticalalignment='center')
         # plotting cut-off period
@@ -1395,8 +1395,8 @@ class CrossCorrelation:
         if outfile:
             fig.savefig(outfile, dpi=300, transparent=True)
 
-        if showplot:
-            plt.show()
+        #if showplot:
+        #    plt.show()
         return fig
 
     def _plottitle(self, prefix='', months=None):
@@ -1795,9 +1795,9 @@ class CrossCorrelationCollection(AttribDict):
             fig.set_size_inches(figsize)
             fig.savefig(outfile, dpi=dpi)
 
-        if showplot:
+        #if showplot:
             # showing plot
-            plt.show()
+        #    plt.show()
 
         plt.close()
 
@@ -1878,7 +1878,7 @@ class CrossCorrelationCollection(AttribDict):
         plt.ylabel('SNR')
         plt.title(u'{0} pairs'.format(npair))
         plt.grid()
-        plt.show()
+        #plt.show()
 
     def plot_pairs(self, minSNR=None, minspectSNR=None, minday=1, mindist=None,
                    withnets=None, onlywithnets=None, pairs_subset=None, whiten=False,
@@ -1938,7 +1938,7 @@ class CrossCorrelationCollection(AttribDict):
         plt.title(u'{0} pairs'.format(npair))
         plt.xlim(bbox[:2])
         plt.ylim(bbox[2:])
-        plt.show()
+        #plt.show()
 
     def export(self, outprefix, stations=None, verbose=False):
         """
@@ -2413,7 +2413,7 @@ def preprocess_trace(trace, paz=None, freqmin=FREQMIN, freqmax=FREQMAX,
             factor = int(np.ceil(trace.stats.sampling_rate / 10))
             trace.decimate(factor=factor, no_filter=True)
         trace.simulate(paz_remove=paz,
-                       paz_simulate=obspy.signal.cornFreq2Paz(0.01),
+                       paz_simulate=obspy.signal.invsim.corn_freq_2_paz(0.01),
                        remove_sensitivity=True,
                        simulate_sensitivity=True,
                        nfft_pow2=True)
@@ -2625,7 +2625,7 @@ def FTAN(x, dt, periods, alpha, phase_corr=None):
         Xa[mask] = np.abs(Xa[mask]) * np.exp(-1j * phi)
 
         # tapering
-        taper = cosTaper(npts=mask.sum(), p=0.05)
+        taper = cosine_taper(npts=mask.sum(), p=0.05)
         Xa[mask] *= taper
         Xa[~mask] = 0.0
 

@@ -8,7 +8,7 @@ import psutils
 import obspy
 import obspy.core
 from obspy import read_inventory
-from obspy.xseed.utils import SEEDParserException
+from obspy.io.xseed.utils import SEEDParserException
 import os
 import glob
 import pickle
@@ -237,6 +237,7 @@ def get_stations(mseed_dir=MSEED_DIR, xml_inventories=(), dataless_inventories=(
             station = Station(name=name, network=network, channel=channel,
                               filename=filename, basedir=mseed_dir, subdirs=[subdir])
             stations.append(station)
+
         else:
             # appending subdir to list of subdirs of station
             station.subdirs.append(subdir)
@@ -251,7 +252,7 @@ def get_stations(mseed_dir=MSEED_DIR, xml_inventories=(), dataless_inventories=(
     for sta in copy(stations):
         # coordinates of station in dataless inventories
         coords_set = set((c['longitude'], c['latitude']) for inv in dataless_inventories
-                         for c in inv.getInventory()['channels']
+                         for c in inv.get_inventory()['channels']
                          if c['channel_id'].split('.')[:2] == [sta.network, sta.name])
 
         # coordinates of station in xml inventories
@@ -385,8 +386,8 @@ def get_paz(channelid, t, inventories):
 
     for inv in inventories:
         try:
-            if hasattr(inv, 'getPAZ'):
-                paz = inv.getPAZ(channelid, t)
+            if hasattr(inv, 'get_paz'):
+                paz = inv.get_paz(channelid, t)
             else:
                 assert channelid == inv['channelid']
                 assert not inv['startdate'] or t >= inv['startdate']
